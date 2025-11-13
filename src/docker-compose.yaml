@@ -1,0 +1,43 @@
+﻿services:
+  catalogdb:
+    image: postgres
+    container_name: catalogdb
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=CatalogDb
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_catalog:/var/lib/postgresql/data
+
+  catalog.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=myPwd123
+      - ConnectionStrings__Database=Server=catalogdb;port=5432;Database=CatalogDb;User Id=postgres;password=postgres;Include Error Detail=true
+    ports:
+      - "6000:8080"
+      - "6060:8081"
+    depends_on:
+      - catalogdb
+    volumes:
+      - ./https:/https:ro
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/usersecrets:ro
+    image: catalog.api
+    build:
+      context: .
+      dockerfile: Services/Catalog/Catalog.API/Dockerfile
+
+volumes:
+  postgres_catalog:
+  basket.api:
+    image: basket.api
+    build:
+      context: .
+      dockerfile: Services/Basket/Basket.API/Dockerfile
